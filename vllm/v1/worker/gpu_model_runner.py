@@ -556,6 +556,7 @@ class GPUModelRunner(LoRAModelRunnerMixin, KVConnectorModelRunnerMixin):
                 req_id=req_id,
                 prompt_token_ids=new_req_data.prompt_token_ids,
                 mm_kwargs=new_req_data.mm_kwargs,
+                mm_patch_embeds=new_req_data.mm_patch_embeds,
                 mm_positions=new_req_data.mm_positions,
                 mm_hashes=new_req_data.mm_hashes,
                 sampling_params=sampling_params,
@@ -1766,9 +1767,12 @@ class GPUModelRunner(LoRAModelRunnerMixin, KVConnectorModelRunnerMixin):
 
         # _prepare_inputs may reorder the batch, so we must gather multi
         # modal outputs after that to ensure the correct order
+        
         if (self.supports_mm_inputs and get_pp_group().is_first_rank
                 and not self.model_config.is_encoder_decoder):
-            # Run the multimodal encoder if any.
+            
+            # print(f"***** Scheduler output: {scheduler_output}")
+            
             self._execute_mm_encoder(scheduler_output)
             mm_embeds = self._gather_mm_embeddings(scheduler_output)
 
@@ -1778,6 +1782,7 @@ class GPUModelRunner(LoRAModelRunnerMixin, KVConnectorModelRunnerMixin):
             inputs_embeds_scheduled = self.model.get_input_embeddings(
                 input_ids=self.input_ids.gpu[:num_scheduled_tokens],
                 multimodal_embeddings=mm_embeds or None,
+                
             )
 
             # TODO(woosuk): Avoid the copy. Optimize.

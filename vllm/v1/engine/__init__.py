@@ -49,6 +49,7 @@ class EngineCoreRequest(
     request_id: str
     prompt_token_ids: list[int]
     mm_features: Optional[list[MultiModalFeatureSpec]]
+    mm_patch_embeds: Optional[list]
     sampling_params: Optional[SamplingParams]
     pooling_params: Optional[PoolingParams]
     eos_token_id: Optional[int]

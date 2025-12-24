@@ -401,6 +401,8 @@ class Processor:
 
         # Multimodal related.
         mm_features: Optional[list[MultiModalFeatureSpec]] = None
+        
+        # print(f"***** Decoder inputs: {decoder_inputs}")
 
         if decoder_inputs["type"] == "multimodal":
             decoder_mm_inputs = decoder_inputs["mm_kwargs"]
@@ -419,12 +421,17 @@ class Processor:
                         data=decoder_mm_inputs[modality][idx],
                         modality=modality,
                         identifier=decoder_mm_hashes[modality][idx],
-                        mm_position=decoder_mm_positions[modality][idx]))
-
-        return decoder_inputs.get("prompt"), EngineCoreRequest(
+                        mm_position=decoder_mm_positions[modality][idx])
+                    )
+            
+        mm_patch_embeds = processed_inputs.get("image_patch_embeddings", None)
+            
+        prompt = decoder_inputs.get("prompt")
+        request = EngineCoreRequest(
             request_id=request_id,
             prompt_token_ids=decoder_inputs["prompt_token_ids"],
             mm_features=mm_features,
+            mm_patch_embeds=mm_patch_embeds,
             sampling_params=sampling_params,
             pooling_params=pooling_params,
             eos_token_id=eos_token_id,
@@ -435,6 +442,12 @@ class Processor:
             data_parallel_rank=data_parallel_rank,
             trace_headers=trace_headers,
         )
+        
+        if mm_patch_embeds is not None:
+            print(f"***** MM patch embeds: {(len(mm_patch_embeds), len(mm_patch_embeds[0]))}")
+            # print(f"***** Request: {request}")
+        
+        return prompt, request
 
     def _validate_model_inputs(self,
                                inputs: ProcessorInputs,

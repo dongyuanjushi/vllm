@@ -289,6 +289,8 @@ class AsyncLLM(EngineClient):
         prompt_str, request = self.processor.process_inputs(
             request_id, prompt, params, arrival_time, lora_request,
             tokenization_kwargs, trace_headers, priority, data_parallel_rank)
+        
+        # print(f"***** Request: {request}")
 
         if is_pooling or params.n == 1:
             await self._add_request(request, prompt_str, None, 0, queue)
@@ -371,6 +373,8 @@ class AsyncLLM(EngineClient):
                 truncate_prompt_tokens,
                 tokenization_kwargs,
             )
+            
+            # print(f"***** Prompt: {prompt}")
 
             q = await self.add_request(
                 request_id,
